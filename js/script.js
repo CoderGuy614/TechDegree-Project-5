@@ -4,6 +4,7 @@ $.ajax({
     success: function(data){
         generateUser(data);
         addClickListeners();
+        addSearch();
     }
   });
 function generateUser(data){
@@ -139,3 +140,12 @@ function addClickListeners(){
     }
 }
 
+function addSearch(){
+    
+    searchContainer = $('.search-container')
+    $form = $("<form action='#' method='get'></form>");
+    $form.append('<input type="search" id="search-input" class = "search-input" placeholder="Search..." >');
+    $form.append('<input type="submit" id="search-submit" class = "search-submit" value="&#x1F50D;" >');
+    searchContainer.append($form);
+        
+}
