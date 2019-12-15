@@ -1,12 +1,14 @@
+// Getting the data from the randomuser API
 $.ajax({
-    url: 'https://randomuser.me/api/?results=12',
+    url: 'https://randomuser.me/api/?results=12&nat=us,gb',
     dataType: 'json',
     success: function(data){
         generateUser(data);
         addClickListeners();
-        addSearch();
+        addSearch(data);
     }
   });
+  // This function handles the returned data and formats it into the html elements 
 function generateUser(data){
     const resultsArray = data.results
     resultsArray.forEach( user => {
@@ -18,9 +20,13 @@ function generateUser(data){
         const picture = user.picture.thumbnail;
         const phone = user.phone;
         const streetAddress = user.location.street.number + " " + user.location.street.name + " " + user.location.postcode;
-        const birthday = user.dob.date.substring(0,10);
+        const birthYear = user.dob.date.substring(0,4);
+        const birthMonth = user.dob.date.substring(5,7);
+        const birthDay = user.dob.date.substring(8,10);
+        console.log(birthDay)
+        console.log(user.dob.date)
         let modalId = 0;
-        // creating the user divs
+// creating the user divs
         $('#gallery').append(
             $('<div/>')
               .attr("id", firstName + lastName)
@@ -116,7 +122,23 @@ function generateUser(data){
                                     .append(
                                         $('<p>')
                                             .addClass('modal-text')
-                                            .html(`Birthday: ${birthday}`)
+                                            .html(`Birthday: ${birthMonth}-${birthDay}-${birthYear}`)
+                                    )
+                                    .append(
+                                        $('<button>')
+                                            .text('Previous')
+                                            .addClass('myButton')
+                                            .click(function(e){
+                                                showPrevious(e)
+                                            })
+                                    )
+                                    .append(
+                                        $('<button>')
+                                            .addClass('myButton')
+                                            .text('Next')
+                                            .click(function(e){
+                                                showNext(e)
+                                            })
                                     )
                                 )
                             
@@ -125,10 +147,10 @@ function generateUser(data){
                     )     
     })
 }
+// This function opens the modal that corresponds to the person whose div is clicked
 function addClickListeners(){
     const divs = $('div.card')
     const modals = $('div.modal-container')
-// Adding click listeners to each div that will display the modal when clicked
     for(let i = 0; i < divs.length; i++){
         divs[i].addEventListener('click', function(){
             const name =(divs[i].id)
@@ -139,13 +161,49 @@ function addClickListeners(){
         })
     }
 }
-
-function addSearch(){
-    
-    searchContainer = $('.search-container')
+   // Adding the search field to the top of the page
+function addSearch(data){
     $form = $("<form action='#' method='get'></form>");
     $form.append('<input type="search" id="search-input" class = "search-input" placeholder="Search..." >');
     $form.append('<input type="submit" id="search-submit" class = "search-submit" value="&#x1F50D;" >');
-    searchContainer.append($form);
-        
+    $('.search-container').append($form);
+
+    // Adding keyup and click listeners to the search bar
+    const searchSubmit = $('#search-submit');
+    let input = $('#search-input');
+    input.on('keyup', searchFunction);
+    searchSubmit.on('click', searchFunction);
 }
+// Checks to see if the search input matches any names and shows the matches
+function searchFunction(){
+    const divs = $('div.card')
+    let searchInput = $('#search-input').val();
+        for(let i = 0; i < divs.length; i++) {
+            const name =(divs[i].id)
+            if(name.toLowerCase().includes(searchInput.toLowerCase())) {
+            divs[i].style.display = "block"
+            } else {
+                divs[i].style.display = "none"
+            }
+    }
+}
+// Shows the next modal 
+function showNext(e){
+    let nextModal = e.target.parentElement.parentElement.parentElement.nextSibling
+    if(nextModal){
+        nextModal.style.display = "block"
+        e.target.parentElement.parentElement.parentElement.style.display = "none"
+    } 
+}
+
+
+// Shows the previous modal
+function showPrevious(e){
+    let previousModal = (e.target.parentElement.parentElement.parentElement.previousSibling)
+    let currentModal =  (e.target.parentElement.parentElement.parentElement)
+        if(previousModal.id !== 'gallery'){
+            previousModal.style.display = "block"
+            currentModal.style.display = "none"
+        }
+    }
+
